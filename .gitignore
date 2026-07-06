@@ -1,0 +1,30 @@
+# Build output
+build/
+bin/
+target/
+out/
+*.class
+
+# Logs / dumps
+logs/
+*.log
+hs_err_pid*.log
+
+# Artefactos / respaldos
+*.jar
+*.war
+*.ear
+*.zip
+*.7z
+
+# Data / temporales
+*.csv
+*.tmp
+*.bak
+
+# Secretos
+*.bin
+*.key
+*.pem
+*.p12
+*.jks
