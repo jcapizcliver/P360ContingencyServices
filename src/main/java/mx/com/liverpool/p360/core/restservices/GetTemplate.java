@@ -36,11 +36,12 @@ public class GetTemplate extends HttpServlet {
 		
 		String template = request.getParameter("template");
 		String business = request.getParameter("business");
+		String creationType = request.getParameter( "creationType" );
 		String externalInformation = request.getParameter("externalInformation");
 		String asi = request.getParameter("aSAPInt");
 		
 		GetTemplateInformation gti = new GetTemplateInformation();
-		String rawResponse =  gti.processRequest(template, business, externalInformation, baseUrl, encoded); // gti.handleStart(new String[] {template, business, externalInformation});
+		String rawResponse =  gti.processRequest(template, business, externalInformation, baseUrl, encoded, creationType); // gti.handleStart(new String[] {template, business, externalInformation});
 		response.setHeader("Content-Type", "application/json");
 		response.setHeader("Accept", "application/json");
 		response.setCharacterEncoding("UTF-8");

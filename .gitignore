@@ -28,3 +28,6 @@ hs_err_pid*.log
 *.pem
 *.p12
 *.jks
+
+# Agents
+AGENTS.md
