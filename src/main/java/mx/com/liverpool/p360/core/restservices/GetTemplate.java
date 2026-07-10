@@ -36,7 +36,7 @@ public class GetTemplate extends HttpServlet {
 		
 		String template = request.getParameter("template");
 		String business = request.getParameter("business");
-		String creationType = request.getParameter( "creationType" );
+		String creationType = request.getParameter("creationType");
 		String externalInformation = request.getParameter("externalInformation");
 		String asi = request.getParameter("aSAPInt");
 		
