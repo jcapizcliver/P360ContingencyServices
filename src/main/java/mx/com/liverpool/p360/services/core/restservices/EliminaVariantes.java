@@ -8,8 +8,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import mx.com.liverpool.p360.services.core.PropertiesManager;
-import mx.com.liverpool.p360.services.core.RESTWorkshop;
+import mx.com.liverpool.p360.services.core.RESTWrapper;
 
 /**
  * Servlet implementation class EliminaVariantes
@@ -36,18 +35,19 @@ public class EliminaVariantes extends HttpServlet {
 			String[] pieces = variantIds.split(",");
 			for(int i=0; i<pieces.length; i++) {
 				sb.append(i == 0 ? "" : ",");
-				sb.append("'").append(pieces[i].trim()).append("'@'MASTER'");
+				sb.append("'").append(pieces[i].trim()).append("'@1");
 			}
-			String baseUrl = PropertiesManager.get("p360.contingency.base_url");
-			String encoded = PropertiesManager.get("p360.contingency.basic_token_auth");
-			RESTWorkshop workshop = new RESTWorkshop();
-			workshop.setBaseUrl(baseUrl);
-			workshop.getRc().getHeader().put("Authorization", "Basic: " + encoded);
-			workshop.putParameter("items", sb.toString());
+			RESTWrapper rw = new RESTWrapper();
+			java.util.Map<String, String> qp = new java.util.HashMap<>();
+			qp.put("items", sb.toString());
 			logMe("Deleting... " + sb.toString());
-			workshop.getRc().getHeader().put("Content-Type", "application/x-www-form-urlencoded");
-			org.json.JSONObject resp = workshop.makeRequest("DELETE", "/list/Article/byItems");
-			response.getWriter().println(resp.toString());
+			logMe("Change");
+			String[] dr = new String[1];
+			dr[0] = null;
+			rw.deleteData("list", "Article", null, "byItems", qp, r -> dr[0] = r);
+			logMe("RR: " + dr[0]);
+			logMe("RR2: " + rw.getRw().getRawResponse());
+			response.getWriter().println(dr[0] == null ? rw.getRw().getRawResponse() : dr[0]);
 		}else {
 			response.getWriter().println(new org.json.JSONObject().put("message", "No variantIds to delete."));
 		}
