@@ -157,6 +157,11 @@
 	<classpathentry kind="lib" path="C:/opt/LVP/java/Projects/lib/google-cloud-pubsub-1.134.2.jar"/>
 	<classpathentry kind="lib" path="C:/opt/LVP/java/Projects/lib/google-cloud-pubsub-1.136.0.jar"/>
 	<classpathentry kind="lib" path="C:/opt/LVP/java/Projects/lib/protobuf-java-4.29.3.jar"/>
+	<classpathentry kind="lib" path="C:/opt/LVP/java/Projects/lib/ojdbc11.jar">
+		<attributes>
+			<attribute name="org.eclipse.jst.component.dependency" value="/WEB-INF/lib"/>
+		</attributes>
+	</classpathentry>
 	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/Memelos"/>
 	<classpathentry kind="output" path="build/classes"/>
 </classpath>

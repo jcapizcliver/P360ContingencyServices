@@ -25,6 +25,7 @@ import mx.com.liverpool.p360.services.core.net.DataRequestor;
 @WebServlet("/public/rt/proc_ws_list_valid_values_for_template_characteristic_lov")
 public class GetListOfValues extends HttpServlet {
 	private static final long serialVersionUID = 1L;
+	private String creationType = "CreateProposal";
        
     /**
      * @see HttpServlet#HttpServlet()
@@ -40,6 +41,7 @@ public class GetListOfValues extends HttpServlet {
 		String template = request.getParameter("template");
 		String characteristic = request.getParameter("characteristic");
 		String includeAlternative = request.getParameter("includeAlternative");
+		String creationType = request.getParameter("creationType");
 //		String itemGroup = null; //request.getParameter("itemGroup");
 		
 		String validValues = null;
@@ -60,35 +62,35 @@ public class GetListOfValues extends HttpServlet {
 		java.util.TreeMap<String, String> qp = new java.util.TreeMap<>();
 		java.util.LinkedList<java.util.Map.Entry<String, org.json.JSONArray>> entries = null;
 		String rawResponse = null;
-//		org.json.JSONArray partes = null;
-		
-//		qp.put("dictionaryProxy", "'ExtensionDeMetadatos_ ValoresPredeterminadosPorPlantilla'");
-//		qp.put("query", ""
-//				+ "StandardizationValue.Dictionary->StandardizationDictionary.Identifier equals \"ExtensionDeMetadatos_ ValoresPredeterminadosPorPlantilla\""
-//				+ " and StandardizationValue.StructureGroup->LookupValue.Code equals \"" + template + "\""
-//				+ " and StandardizationValue.Characteristic->Characteristic.Identifier equals \""+ characteristic + "\""
-//				+ " and StandardizationValue.CreationType equals CreateProposal"
-//				+ " and StandardizationValue.Property equals ListOfValuesFilter");
-//		qp.put("fields", "StandardizationValue.PropertyValue,StandardizationValue.Characteristic->Characteristic.Lookup->Lookup.Identifier");
-//		
-//		resp = workshop.makeRequest("GET", "/list/StandardizationValue/bySearch", qp, null);
-//		rows = resp.getJSONArray("rows");
-//		
-//		if(rows.length() == 0) {
-//			qp.put("dictionaryProxy", "'GlobalTemplateAttributeConfiguration'");
-//			qp.put("query", ""
-//					+ "StandardizationValue.Dictionary->StandardizationDictionary.Identifier equals \"GlobalTemplateAttributeConfiguration\""
-//					+ " and StandardizationValue.Characteristic->Characteristic.Identifier equals \""+ characteristic + "\""
-//					+ " and StandardizationValue.CreationType equals CreateProposal"
-//					+ " and StandardizationValue.Property equals ListOfValuesFilter");
-//			qp.put("fields", "StandardizationValue.PropertyValue,StandardizationValue.Characteristic->Characteristic.Lookup->Lookup.Identifier");
-//			
-//			resp = workshop.makeRequest("GET", "/list/StandardizationValue/bySearch", qp, null);
-//			rows = resp.getJSONArray("rows");
-//		}
-//		
-//		values = rows.length() > 0 ? rows.getJSONObject(0).getJSONArray("values") : null;
-//		validValues = values != null ? values.getString(0) : null;
+		if (creationType == null) {
+	        creationType = this.creationType;
+	    }
+/*		org.json.JSONArray partes = null;
+		qp.put("dictionaryProxy", "'ExtensionDeMetadatos_ ValoresPredeterminadosPorPlantilla'");
+		qp.put("query", ""
+				+ "StandardizationValue.Dictionary->StandardizationDictionary.Identifier equals \"ExtensionDeMetadatos_ ValoresPredeterminadosPorPlantilla\""
+				+ " and StandardizationValue.StructureGroup->LookupValue.Code equals \"" + template + "\""
+				+ " and StandardizationValue.Characteristic->Characteristic.Identifier equals \""+ characteristic + "\""
+				+ " and StandardizationValue.CreationType equals CreateProposal"
+				+ " and StandardizationValue.Property equals ListOfValuesFilter");
+		qp.put("fields", "StandardizationValue.PropertyValue,StandardizationValue.Characteristic->Characteristic.Lookup->Lookup.Identifier");
+		resp = workshop.makeRequest("GET", "/list/StandardizationValue/bySearch", qp, null);
+		rows = resp.getJSONArray("rows");
+		if(rows.length() == 0) {
+			qp.put("dictionaryProxy", "'GlobalTemplateAttributeConfiguration'");
+			qp.put("query", ""
+					+ "StandardizationValue.Dictionary->StandardizationDictionary.Identifier equals \"GlobalTemplateAttributeConfiguration\""
+					+ " and StandardizationValue.Characteristic->Characteristic.Identifier equals \""+ characteristic + "\""
+					+ " and StandardizationValue.CreationType equals CreateProposal"
+					+ " and StandardizationValue.Property equals ListOfValuesFilter");
+			qp.put("fields", "StandardizationValue.PropertyValue,StandardizationValue.Characteristic->Characteristic.Lookup->Lookup.Identifier");
+			
+			resp = workshop.makeRequest("GET", "/list/StandardizationValue/bySearch", qp, null);
+			rows = resp.getJSONArray("rows");
+		}
+		values = rows.length() > 0 ? rows.getJSONObject(0).getJSONArray("values") : null;
+		validValues = values != null ? values.getString(0) : null;
+*/
 		DataRequestor dr = new DataRequestor();
 		String r = null;
 		r = dr.getCharacteristicData(new org.json.JSONArray().put(characteristic));
@@ -103,7 +105,7 @@ public class GetListOfValues extends HttpServlet {
 			logE(e);
 		}
 		if(lookup != null) {
-			r = dr.getTemplateCharacteristicMetaDataByTemplateCharacteristicProperty(new org.json.JSONArray().put(new org.json.JSONObject().put("template", template).put("characteristic", characteristic).put("property", "listofValuesValidValues")));
+			r = dr.getTemplateCharacteristicMetaDataByTemplateCharacteristicProperty(new org.json.JSONArray().put(new org.json.JSONObject().put("template", template).put("characteristic", characteristic).put("property", "listofValuesValidValues").put("creationType", creationType)));
 			logMe("rtcm (" + template + "," + characteristic + "," + lookup + ") " + r);
 			try {
 				org.json.JSONObject jr = new org.json.JSONObject(r);

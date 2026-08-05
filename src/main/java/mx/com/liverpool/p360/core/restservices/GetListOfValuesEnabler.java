@@ -19,6 +19,7 @@ import mx.com.liverpool.p360.services.core.net.DataRequestor;
 public class GetListOfValuesEnabler extends HttpServlet {
 
 	private static final long serialVersionUID = 1L;
+	private String creationType = "CreateProposal";
 
     /**
      * @see HttpServlet#HttpServlet()
@@ -38,6 +39,10 @@ public class GetListOfValuesEnabler extends HttpServlet {
 		String template = request.getParameter("template");
 		String characteristic = request.getParameter("characteristic");
 		String includeAlternative = request.getParameter("includeAlternative");
+		String creationType = request.getParameter("creationType");
+		if(creationType == null) {
+			creationType = this.creationType;
+		}
 		
 		String validValues = null;
 		String lookup = null;
@@ -64,7 +69,7 @@ public class GetListOfValuesEnabler extends HttpServlet {
 		
 		DataRequestor dr = new DataRequestor();
 		String r = null;
-		r = dr.getTemplateCharacteristicMetaDataByTemplateCharacteristicProperty(new org.json.JSONArray().put(new org.json.JSONObject().put("template", template).put("characteristic", characteristic).put("property", "dependentValues")));
+		r = dr.getTemplateCharacteristicMetaDataByTemplateCharacteristicProperty(new org.json.JSONArray().put(new org.json.JSONObject().put("template", template).put("characteristic", characteristic).put("property", "dependentValues").put("creationType", creationType)));
 		logMe("For .. " + template + ", " + characteristic + ": " + r);
 		try {
 			org.json.JSONObject jr = new org.json.JSONObject(r);
@@ -86,7 +91,7 @@ public class GetListOfValuesEnabler extends HttpServlet {
 				sb0.append(vvs[i].trim());
 				sb0.append("\"");
 			}
-			r = dr.getTemplateCharacteristicMetaDataByTemplateCharacteristicProperty(new org.json.JSONArray().put(new org.json.JSONObject().put("template", template).put("characteristic", characteristic).put("property", "dependentAttribute")));
+			r = dr.getTemplateCharacteristicMetaDataByTemplateCharacteristicProperty(new org.json.JSONArray().put(new org.json.JSONObject().put("template", template).put("characteristic", characteristic).put("property", "dependentAttribute").put("creationType", creationType)));
 			try {
 				org.json.JSONObject jr = new org.json.JSONObject(r);
 				org.json.JSONArray items = jr.getJSONArray("items");
