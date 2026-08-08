@@ -29,3 +29,11 @@ hs_err_pid*.log
 *.p12
 *.jks
 
+<<<<<<< HEAD
+=======
+# Agents
+AGENTS.md
+.settings
+.classpath
+.project
+>>>>>>> dev

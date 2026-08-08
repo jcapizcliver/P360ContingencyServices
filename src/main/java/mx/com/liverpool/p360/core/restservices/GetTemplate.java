@@ -38,6 +38,7 @@ public class GetTemplate extends HttpServlet {
 		
 		String template = request.getParameter("template");
 		String business = request.getParameter("business");
+		String creationType = request.getParameter("creationType");
 		String externalInformation = request.getParameter("externalInformation");
 		String asi = request.getParameter("aSAPInt");
 		logMe("Attending request BD");
@@ -53,7 +54,6 @@ public class GetTemplate extends HttpServlet {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
 		logMe("Lasted: " + rw.getRw().formatTime(System.currentTimeMillis() - init));
 //		response.setStatus(HttpServletResponse.SC_GONE);
 	}

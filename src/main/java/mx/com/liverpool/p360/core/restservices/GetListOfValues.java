@@ -23,6 +23,7 @@ import mx.com.liverpool.p360.services.core.ELog;
 @WebServlet("/public/rt/proc_ws_list_valid_values_for_template_characteristic_lov")
 public class GetListOfValues extends HttpServlet {
 	private static final long serialVersionUID = 1L;
+	private String creationType = "CreateProposal";
        
     /**
      * @see HttpServlet#HttpServlet()
@@ -30,7 +31,6 @@ public class GetListOfValues extends HttpServlet {
     public GetListOfValues() {
         super();
     }
-	
     @Override
     protected void doGet(
     		HttpServletRequest request,
