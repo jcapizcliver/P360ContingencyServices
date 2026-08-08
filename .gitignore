@@ -29,6 +29,3 @@ hs_err_pid*.log
 *.p12
 *.jks
 
-.settings
-.classpath
-.project

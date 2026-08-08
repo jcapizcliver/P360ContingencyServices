@@ -65,7 +65,7 @@ public class GetListOfValuesEnabler extends HttpServlet {
 		DataRequestor dr = new DataRequestor();
 		String r = null;
 		r = dr.getTemplateCharacteristicMetaDataByTemplateCharacteristicProperty(new org.json.JSONArray().put(new org.json.JSONObject().put("template", template).put("characteristic", characteristic).put("property", "dependentValues")));
-		logMe("For .. " + template + ", " + characteristic + ": " + r);
+		logMe("For .." + new org.json.JSONArray().put(new org.json.JSONObject().put("template", template).put("characteristic", characteristic).put("property", "dependentValues")) + ".. " + template + ", " + characteristic + ": " + r);
 		try {
 			org.json.JSONObject jr = new org.json.JSONObject(r);
 			org.json.JSONArray items = jr.getJSONArray("items");

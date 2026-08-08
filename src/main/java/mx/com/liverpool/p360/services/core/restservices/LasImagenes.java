@@ -1,13 +1,12 @@
 package mx.com.liverpool.p360.services.core.restservices;
 
 import java.io.IOException;
+
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import mx.com.liverpool.p360.services.core.PropertiesManager;
 
 /**
  * Servlet implementation class LasImagenes
@@ -48,17 +47,18 @@ public class LasImagenes extends HttpServlet {
 		while( (line = br.readLine()) != null ) {
 			sb.append(line);
 		}
-		java.nio.file.Path fp = java.nio.file.Paths.get(p.toString(), fn, "LasImagenes_" + new java.text.SimpleDateFormat("yyyyMMddHHmmssSSS").format(new java.util.Date()) + ".xml");
-		try(java.io.PrintWriter pw = 
-				new java.io.PrintWriter(
-						new java.io.OutputStreamWriter(
-								new java.io.FileOutputStream(
-										fp.toFile()
-									), java.nio.charset.StandardCharsets.UTF_8 ))){
-				pw.println(sb.toString());
-		}catch(java.io.IOException e) {
-			e.printStackTrace();
-		}
+		
+//		java.nio.file.Path fp = java.nio.file.Paths.get(p.toString(), fn, "LasImagenes_" + new java.text.SimpleDateFormat("yyyyMMddHHmmssSSS").format(new java.util.Date()) + ".xml");
+//		try(java.io.PrintWriter pw = 
+//				new java.io.PrintWriter(
+//						new java.io.OutputStreamWriter(
+//								new java.io.FileOutputStream(
+//										fp.toFile()
+//									), java.nio.charset.StandardCharsets.UTF_8 ))){
+//				pw.println(sb.toString());
+//		}catch(java.io.IOException e) {
+//			e.printStackTrace();
+//		}
 		
 		org.json.JSONObject rootRequest = new org.json.JSONObject(sb.toString());
 		mx.com.liverpool.p360.services.core.LasImagenes cp = new mx.com.liverpool.p360.services.core.LasImagenes();

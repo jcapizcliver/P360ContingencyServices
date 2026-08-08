@@ -50,12 +50,12 @@ public class CharacteristicTemplateValues extends HttpServlet {
 		qp.put("includeObjectsInProtocol", "false");
 		RequestHandler rh = new RequestHandler(
 				new org.json.JSONArray()
-					.put(new org.json.JSONObject().put("identifier", "StandardizationValue.StructureGroup"))
-					.put(new org.json.JSONObject().put("identifier", "StandardizationValue.Characteristic"))
-					.put(new org.json.JSONObject().put("identifier", "StandardizationValue.CreationType"))
-					.put(new org.json.JSONObject().put("identifier", "StandardizationValue.Property"))
-					.put(new org.json.JSONObject().put("identifier", "StandardizationValue.PropertyValue"))
-				, batchSize, req -> rw.writeData("list", "StandardizationValue", null, qp, req, responses::addLast));
+					.put(new org.json.JSONObject().put("identifier", "LookupValue.StructureGroup"))
+					.put(new org.json.JSONObject().put("identifier", "LookupValue.Characteristic"))
+					.put(new org.json.JSONObject().put("identifier", "LookupValue.CreationType"))
+					.put(new org.json.JSONObject().put("identifier", "LookupValue.Property"))
+					.put(new org.json.JSONObject().put("identifier", "LookupValue.PropertyValue"))
+				, batchSize, req -> rw.writeData("list", "LookupValue", null, qp, req, responses::addLast));
 		org.json.JSONObject json;
 		try {
 			org.json.JSONObject rootRequest = new org.json.JSONObject(sb.toString());

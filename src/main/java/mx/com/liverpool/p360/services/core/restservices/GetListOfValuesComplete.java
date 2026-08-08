@@ -8,8 +8,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import mx.com.liverpool.p360.services.core.PropertiesManager;
-import mx.com.liverpool.p360.services.core.RESTWorkshop;
+import mx.com.liverpool.p360.services.core.DBAccessDataStub;
+import mx.com.liverpool.p360.services.core.ELog;
 
 /**
  * Servlet implementation class GetListOfValuesComplete
@@ -30,49 +30,34 @@ public class GetListOfValuesComplete extends HttpServlet {
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
 	 */
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-
-		String baseUrl = PropertiesManager.get( "p360.contingency.base_url" );
-		String encoded = PropertiesManager.get( "p360.contingency.basic_token_auth" );
-		String lookup = request.getParameter("lookup");
+	String lookup = request.getParameter("lookup");
+	if (lookup == null || "".equals(lookup)) {
+		return;
+	}
+	org.json.JSONArray responseArray = new org.json.JSONArray();
+	try (DBAccessDataStub dastub = new DBAccessDataStub( new ELog() {
 		
-		if(lookup != null && !"".equals(lookup)) {
-			
-			RESTWorkshop workshop = new RESTWorkshop();
-			workshop.setBaseUrl( baseUrl );
-			workshop.getRc().getHeader().put("Authorization", "Basic: " + encoded);
-			java.util.Map<String, String> qp = new java.util.TreeMap<>();
-			qp.put("lookup", lookup);
-			qp.put("pageSize", "1200");
-			qp.put("fields", "LookupValue.Code,LookupValueLang.Name(es)");
-			
-			org.json.JSONObject resp = null;
-			org.json.JSONArray rows = null;
-			org.json.JSONArray values = null;
-			
-			int currentIndex = 0;
-			int totalSize = 0;
-			
-			org.json.JSONArray responseArray = new org.json.JSONArray();
-			
-			do{
-				qp.put("startIndex", String.valueOf(currentIndex));
-				resp = workshop.makeRequest("GET", "/list/LookupValue/byLookup", qp, null);
-				totalSize = resp.getInt("totalSize");
-				rows = resp.getJSONArray("rows");
-				for(int i=0; i<rows.length(); i++) {
-					currentIndex++;
-					values = rows.getJSONObject(i).getJSONArray("values");
-					responseArray.put(new org.json.JSONObject().put("code", values.getString(0)).put("name", values.getString(1)));
-				}
-			}while(currentIndex < totalSize);
-			currentIndex = 0;
-			
-			response.setHeader("Content-Type", "application/json");
-			response.setHeader("Accept", "application/json");
-			response.setCharacterEncoding("UTF-8");
-			response.getWriter().println(new org.json.JSONObject().put("values", responseArray));
+		@Override
+		public void logE(Exception e) {
 		}
 		
+		@Override
+		public void log(String message) {
+		}
+	} )) {
+		java.util.Map<String, String> lookupValues = dastub.getLookupValueCodeNameMap( lookup, 10, true);
+		for (java.util.Map.Entry<String, String> entry : lookupValues.entrySet()) {
+			responseArray.put(new org.json.JSONObject().put("code", entry.getKey()).put("name", entry.getValue()));
+		}
+	}
+	response.setHeader(
+			"Content-Type",
+			"application/json");
+	response.setHeader(
+			"Accept",
+			"application/json");
+	response.setCharacterEncoding("UTF-8");
+	response.getWriter().println(new org.json.JSONObject().put("values", responseArray));	
 	}
 
 }

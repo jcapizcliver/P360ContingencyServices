@@ -321,18 +321,6 @@ public class SurtidoYXDFastDataAccess extends HttpServlet {
 					responses.put(jr);
 				}
 			}
-		}catch(ClassNotFoundException e) {
-			String r = "Incorrect bundle. Missing db connection libraries.";
-			org.json.JSONObject jr = new org.json.JSONObject();
-			jr.put("error", r);
-			responses.put(jr);
-			response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-		}catch(java.io.IOException e) {
-			String r = "Communicacion error: " + e.getMessage();
-			org.json.JSONObject jr = new org.json.JSONObject();
-			jr.put("error", r);
-			responses.put(jr);
-			response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 		}catch(java.sql.SQLException e) {
 			String r= "Technical issues on retrieving data. DB access issue.";
 			org.json.JSONObject jr = new org.json.JSONObject();
@@ -347,4 +335,13 @@ public class SurtidoYXDFastDataAccess extends HttpServlet {
 		response.getWriter().println(responses.toString());
 	}
 
+
+	private void logMe(String message) {
+        try (java.io.PrintWriter pw = new java.io.PrintWriter(new java.io.OutputStreamWriter(
+                new java.io.FileOutputStream("../logs/SurtidoYXD.log", true)))) {
+            pw.println("[" + (new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new java.util.Date()))
+                    + "]  " + message);
+        } catch (java.io.IOException e) {
+        }
+    }
 }

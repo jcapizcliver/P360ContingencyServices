@@ -10,20 +10,18 @@ import javax.servlet.http.HttpServletResponse;
 
 import mx.com.liverpool.p360.services.core.GetTemplateInformation;
 import mx.com.liverpool.p360.services.core.PropertiesManager;
-import mx.com.liverpool.p360.services.core.RESTWrapper;
-import mx.com.liverpool.p360.services.core.ServiceUnavailableException;
 
 /**
  * Servlet implementation class GetTemplate
  */
-@WebServlet("/public/rt/GetTemplate")
-public class GetTemplate extends HttpServlet {
+@WebServlet("/public/rt/GetTemplate2")
+public class GetTemplate2 extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 	
     /**
      * Default constructor. 
      */
-    public GetTemplate() {
+    public GetTemplate2() {
         // TODO Auto-generated constructor stub
     }
 
@@ -40,28 +38,16 @@ public class GetTemplate extends HttpServlet {
 		String business = request.getParameter("business");
 		String externalInformation = request.getParameter("externalInformation");
 		String asi = request.getParameter("aSAPInt");
-		logMe("Attending request BD");
-		long init = System.currentTimeMillis();
-		RESTWrapper rw = new RESTWrapper();
-		try (GetTemplateInformation gti = new GetTemplateInformation()) {
+		
+		try(GetTemplateInformation gti = new GetTemplateInformation()){
 			String rawResponse =  gti.processRequest(template, business, externalInformation, baseUrl, encoded); // gti.handleStart(new String[] {template, business, externalInformation});
 			response.setHeader("Content-Type", "application/json");
 			response.setHeader("Accept", "application/json");
 			response.setCharacterEncoding("UTF-8");
 			response.getWriter().println(rawResponse);
-		} catch (ServiceUnavailableException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
 		}
-		
-		logMe("Lasted: " + rw.getRw().formatTime(System.currentTimeMillis() - init));
+
 //		response.setStatus(HttpServletResponse.SC_GONE);
-	}
-	
-	private void logMe(String message){
-		try(java.io.PrintWriter pw = new java.io.PrintWriter(new java.io.OutputStreamWriter(new java.io.FileOutputStream("../logs/getTemplateNorm.log", true)))){
-		  pw.println("[" + (new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new java.util.Date())) + "] " + message);
-		}catch(java.io.IOException e){}
 	}
 
 	/**

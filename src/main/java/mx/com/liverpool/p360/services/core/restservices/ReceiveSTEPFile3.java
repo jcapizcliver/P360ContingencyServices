@@ -52,17 +52,17 @@ public class ReceiveSTEPFile3 extends HttpServlet {
 			sb.append(line).append(System.lineSeparator());
 		}
 		java.nio.file.Path fp = java.nio.file.Paths.get(p.toString(), fn, "Gral3_" + new java.text.SimpleDateFormat("yyyyMMddHHmmssSSS").format(new java.util.Date()) + ".xml");
-		LoadProductDataPipeline.processContent(sb.toString(), fp.toString());
 		try(java.io.PrintWriter pw = 
 				new java.io.PrintWriter(
 						new java.io.OutputStreamWriter(
 								new java.io.FileOutputStream(
 										fp.toFile()
-									), charset == null ? java.nio.charset.StandardCharsets.UTF_8 : java.nio.charset.Charset.forName(charset)))){
-				pw.println(sb.toString());
+										), charset == null ? java.nio.charset.StandardCharsets.UTF_8 : java.nio.charset.Charset.forName(charset)))){
+			pw.println(sb.toString());
 		}catch(java.io.IOException e) {
 			e.printStackTrace();
 		}
+		LoadProductDataPipeline.processContent(sb.toString(), fp.toString());
 		response.getWriter().println(sb.toString());
 		logMe("done Processing request: " + rw.getRw().formatTime( System.currentTimeMillis() - init ));
 	}

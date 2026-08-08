@@ -35,16 +35,16 @@ public class BrandsGroupOfArticleByTemplateBusinessProvider extends HttpServlet 
 		String proveedor = request.getParameter("proveedor");
 		String baseUrl = PropertiesManager.get("p360.contingency.base_url");
 		
-		mx.com.liverpool.p360.services.core.BrandsGroupOfArticleByTemplateBusinessProvider runnablePiece = new mx.com.liverpool.p360.services.core.BrandsGroupOfArticleByTemplateBusinessProvider();
-		RESTWorkshop workshop = new RESTWorkshop();
-		workshop.setBaseUrl(baseUrl);
-		workshop.getRc().getHeader().put("Authorization", "Basic: " + PropertiesManager.get("p360.contingency.basic_token_auth"));
-		String rawResponse = runnablePiece.otroRun(new String[] { proveedor, idPlantilla, negocio }, workshop);
-		response.setHeader("Content-Type", "application/json");
-		response.setHeader("Accept", "application/json");
-		response.setCharacterEncoding("UTF-8");
-		response.getWriter().println(rawResponse);
-		
+		try(mx.com.liverpool.p360.services.core.BrandsGroupOfArticleByTemplateBusinessProvider runnablePiece = new mx.com.liverpool.p360.services.core.BrandsGroupOfArticleByTemplateBusinessProvider()){
+			RESTWorkshop workshop = new RESTWorkshop();
+			workshop.setBaseUrl(baseUrl);
+			workshop.getRc().getHeader().put("Authorization", "Basic: " + PropertiesManager.get("p360.contingency.basic_token_auth"));
+			String rawResponse = runnablePiece.otroRun(new String[] { proveedor, idPlantilla, negocio }, workshop);
+			response.setHeader("Content-Type", "application/json");
+			response.setHeader("Accept", "application/json");
+			response.setCharacterEncoding("UTF-8");
+			response.getWriter().println(rawResponse);
+		}
 	}
 
 	
