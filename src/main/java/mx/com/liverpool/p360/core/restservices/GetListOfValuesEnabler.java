@@ -40,8 +40,10 @@ public class GetListOfValuesEnabler extends HttpServlet {
 		String characteristic = request.getParameter("characteristic");
 		String includeAlternative = request.getParameter("includeAlternative");
 		String creationType = request.getParameter("creationType");
-		if(creationType == null) {
+		if(creationType == null || "".equals(creationType.trim())) {
 			creationType = this.creationType;
+		}else {
+			creationType = creationType.trim();
 		}
 		
 		String validValues = null;
@@ -69,14 +71,15 @@ public class GetListOfValuesEnabler extends HttpServlet {
 		
 		DataRequestor dr = new DataRequestor();
 		String r = null;
-		r = dr.getTemplateCharacteristicMetaDataByTemplateCharacteristicProperty(new org.json.JSONArray().put(new org.json.JSONObject().put("template", template).put("characteristic", characteristic).put("property", "dependentValues")));
-		logMe("For .." + new org.json.JSONArray().put(new org.json.JSONObject().put("template", template).put("characteristic", characteristic).put("property", "dependentValues")) + ".. " + template + ", " + characteristic + ": " + r);
+		org.json.JSONArray dependentValuesRequest = new org.json.JSONArray().put(new org.json.JSONObject().put("template", template).put("characteristic", characteristic).put("property", "dependentValues").put("creationType", creationType));
+		r = dr.getTemplateCharacteristicMetaDataByTemplateCharacteristicProperty(dependentValuesRequest);
+		logMe("For .." + dependentValuesRequest + ".. " + template + ", " + characteristic + ": " + r);
 		try {
 			org.json.JSONObject jr = new org.json.JSONObject(r);
 			org.json.JSONArray items = jr.getJSONArray("items");
 			org.json.JSONObject item = items.getJSONObject(0);
 			validValues = item.has(characteristic) && item.getJSONObject(characteristic).has("dependentValues") ? item.getJSONObject(characteristic).getString("dependentValues") : null;
-			logMe("22For .. " + validValues);
+			logMe("For .. " + validValues);
 		}catch(org.json.JSONException e) {
 			logMe( "Problem for: " + template + " - " + characteristic + " - " + e.getMessage() );
 		}

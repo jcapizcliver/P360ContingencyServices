@@ -45,6 +45,13 @@ public class GetListOfValues extends HttpServlet {
     			trimToNull(
     				request.getParameter("characteristic"));
 
+    	String creationType =
+    			trimToNull(
+    				request.getParameter("creationType"));
+    	if (creationType == null) {
+    		creationType = this.creationType;
+    	}
+
     	boolean alternatives =
     			Boolean.parseBoolean(
     				request.getParameter("includeAlternative"));
@@ -70,7 +77,7 @@ public class GetListOfValues extends HttpServlet {
     			dbErrorLogger.accept(e);
     		}
     	};
-
+    			
     	try (DBAccessDataStub dastub =
     			new DBAccessDataStub(dbLog)) {
 
@@ -93,14 +100,15 @@ public class GetListOfValues extends HttpServlet {
     				+ lookup
     				+ " on template: "
     				+ template);
-
+    			
     			if (lookup != null) {
-    				org.json.JSONArray jarr = dastub.getTemplateCharacteristicPropertyValue(template, characteristic, "CreateProposal", "listofValuesValidValues");
+    				org.json.JSONArray jarr = dastub.getTemplateCharacteristicPropertyValue(template, characteristic, creationType, "listofValuesValidValues");
     				String validValues =
     						getValidValues(
     								dastub,
     								template,
-    								characteristic);
+    								characteristic,
+    								creationType);
 
     				java.util.List<org.json.JSONObject> lookupRows =
     						dastub
@@ -224,7 +232,8 @@ public class GetListOfValues extends HttpServlet {
     private String getValidValues(
     		DBAccessDataStub dastub,
     		String template,
-    		String characteristic) {
+    		String characteristic,
+    		String creationType) {
 
     	String validValues = null;
 
@@ -233,7 +242,8 @@ public class GetListOfValues extends HttpServlet {
     		java.util.Map<String, org.json.JSONObject>
     				templateProperties =
     					dastub.getTemplateCharacteristicProperties(
-    							template);
+    							template,
+    							creationType);
 
     		org.json.JSONObject characteristicProperties =
     				templateProperties.get(characteristic);
