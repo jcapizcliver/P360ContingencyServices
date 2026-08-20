@@ -8,6 +8,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import mx.com.liverpool.p360.services.core.DBAccessDataStub;
+import mx.com.liverpool.p360.services.core.ELog;
 import mx.com.liverpool.p360.services.core.PropertiesManager;
 import mx.com.liverpool.p360.services.core.RESTWorkshop;
 import mx.com.liverpool.p360.services.core.net.DataRequestor;
@@ -34,7 +36,6 @@ public class GetListOfValuesForo extends HttpServlet {
 		String template = request.getParameter("template");
 		String characteristic = request.getParameter("characteristic");
 		String includeAlternative = request.getParameter("includeAlternative");
-//		String itemGroup = null; //request.getParameter("itemGroup");
 		
 		String validValues = null;
 		String lookup = null;
@@ -54,61 +55,71 @@ public class GetListOfValuesForo extends HttpServlet {
 		java.util.TreeMap<String, String> qp = new java.util.TreeMap<>();
 		java.util.LinkedList<java.util.Map.Entry<String, org.json.JSONArray>> entries = null;
 		String rawResponse = null;
-		DataRequestor dr = new DataRequestor();
 		String r = null;
-		r = dr.getCharacteristicData(new org.json.JSONArray().put(characteristic));
-		try {
+		try(DBAccessDataStub dastub = new DBAccessDataStub( new ELog() {
+			
+			@Override
+			public void logE(Exception e) {
+			}
+			
+			@Override
+			public void log(String message) {
+			}
+		} )){
+			DataRequestor dr = new DataRequestor(dastub);
+			r = dr.getCharacteristicData(new org.json.JSONArray().put(characteristic));
 			org.json.JSONObject jr = new org.json.JSONObject(r);
 			org.json.JSONArray items = jr.getJSONArray("items");
 			org.json.JSONObject item = items.getJSONObject(0);
 			lookup = !"".equals(item.getString("lookup")) ? item.getString("lookup") : null;
-		}catch(org.json.JSONException e) {
-			logE(e);
-		}
-		if(lookup != null) {
-			r = dr.getTemplateCharacteristicMetaDataByTemplateCharacteristicProperty(new org.json.JSONArray().put(new org.json.JSONObject().put("template", template).put("characteristic", characteristic).put("property", "listofValuesValidValues")));
-			log("rtcm");
-			try {
-				org.json.JSONObject jr = new org.json.JSONObject(r);
-				org.json.JSONArray items = jr.getJSONArray("items");
-				org.json.JSONObject item = items.getJSONObject(0);
-				if(item.length() > 0)
-					validValues = item.has(characteristic) && item.getJSONObject(characteristic).has("listofValuesValidValues") ? item.getJSONObject(characteristic).getString("listofValuesValidValues") : null;
-			}catch(org.json.JSONException e) {
-			}
-			if(validValues == null) {
-				r = dr.getGlobalMetaData();
+
+			if(lookup != null) {
+				r = dr.getTemplateCharacteristicMetaDataByTemplateCharacteristicProperty(new org.json.JSONArray().put(new org.json.JSONObject().put("template", template).put("characteristic", characteristic).put("property", "listofValuesValidValues")));
+				log("rtcm");
 				try {
-					boolean found = false;
-					org.json.JSONObject jr = new org.json.JSONObject(r);
-					org.json.JSONArray items = jr.getJSONArray("items");
-					java.util.Map<String, java.util.Map<String, String>> characteristics = new java.util.HashMap<>();
-					java.util.Map<String, String> properties = null;
-					org.json.JSONObject item = null;
-					org.json.JSONObject itemProperties = null;
-					for(int i=0; i<items.length() && !found; i++) {
-						item = items.getJSONObject(i);
-						for(String name : org.json.JSONObject.getNames(item)) {
-							properties = characteristics.get( name );
-							if(properties == null) {
-								properties = new java.util.HashMap<>();
-								characteristics.put(name, properties);
-							}
-							itemProperties = item.getJSONObject(name);
-							for(String sn : org.json.JSONObject.getNames(itemProperties)) {
-								properties.put(sn, itemProperties.getString(sn));
-							}
-							if( properties.containsKey("listofValuesValidValues") && name.equals(characteristic) ) {
-								validValues = properties.get("listofValuesValidValues");
-								found = true;
-								break;
+					jr = new org.json.JSONObject(r);
+					items = jr.getJSONArray("items");
+					item = items.getJSONObject(0);
+					if(item.length() > 0)
+						validValues = item.has(characteristic) && item.getJSONObject(characteristic).has("listofValuesValidValues") ? item.getJSONObject(characteristic).getString("listofValuesValidValues") : null;
+				}catch(org.json.JSONException e) {
+				}
+				if(validValues == null) {
+					r = dr.getGlobalMetaData();
+					try {
+						boolean found = false;
+						jr = new org.json.JSONObject(r);
+						items = jr.getJSONArray("items");
+						java.util.Map<String, java.util.Map<String, String>> characteristics = new java.util.HashMap<>();
+						java.util.Map<String, String> properties = null;
+						item = null;
+						org.json.JSONObject itemProperties = null;
+						for(int i=0; i<items.length() && !found; i++) {
+							item = items.getJSONObject(i);
+							for(String name : org.json.JSONObject.getNames(item)) {
+								properties = characteristics.get( name );
+								if(properties == null) {
+									properties = new java.util.HashMap<>();
+									characteristics.put(name, properties);
+								}
+								itemProperties = item.getJSONObject(name);
+								for(String sn : org.json.JSONObject.getNames(itemProperties)) {
+									properties.put(sn, itemProperties.getString(sn));
+								}
+								if( properties.containsKey("listofValuesValidValues") && name.equals(characteristic) ) {
+									validValues = properties.get("listofValuesValidValues");
+									found = true;
+									break;
+								}
 							}
 						}
+					}catch(org.json.JSONException e) {
+						logE(e);
 					}
-				}catch(org.json.JSONException e) {
-					logE(e);
 				}
 			}
+		}catch(org.json.JSONException e) {
+			logE(e);
 		}
 		logMe("Got asked for: " + characteristic);
 		if(lookup == null) {

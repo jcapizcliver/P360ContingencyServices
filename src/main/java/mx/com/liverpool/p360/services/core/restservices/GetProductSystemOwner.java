@@ -1,12 +1,15 @@
 package mx.com.liverpool.p360.services.core.restservices;
 
 import java.io.IOException;
+
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import mx.com.liverpool.p360.services.core.DBAccessDataStub;
+import mx.com.liverpool.p360.services.core.ELog;
 import mx.com.liverpool.p360.services.core.PropertiesManager;
 import mx.com.liverpool.p360.services.core.net.DataRequestor;
 
@@ -36,124 +39,136 @@ public class GetProductSystemOwner extends HttpServlet {
 		jr.put("objectsGeneric", objectsGeneric);
 		String skus = request.getParameter("skus");
 		String skusGeneric = request.getParameter("skusGeneric");
-		DataRequestor dr = new DataRequestor();
-		String pn = null;
-		String supplierID = null;
-		java.util.Set<String> proveedoresMigrados = cargaProveedoresMigrados();
-		java.util.Map<String, String> map = new java.util.HashMap<>();
-		java.util.Map<String, String> statusMap = getStatusMap();
-		if(skus != null) {
-			String[] pieces = skus.split(",");
-			java.util.Map<String, String> skusAProductNo = new java.util.TreeMap<>();
-			java.util.Set<String> productNos = new java.util.TreeSet<>();
-			java.util.Map<String, String> productNoASupplierID = new java.util.TreeMap<>();
-			if(pieces != null) {
-				org.json.JSONArray skusArray = new org.json.JSONArray();
-				for(int i=0; i<pieces.length; i++) {
-					skusArray.put(pieces[i]);
-				}
-				String resp = dr.articleBySKU(skusArray);
-				if(resp != null) {
-					logMe("Resp is: " + resp);
-					try{
-						org.json.JSONObject jsonResponse = new org.json.JSONObject(resp);
-						org.json.JSONArray items = jsonResponse.getJSONArray("items");
-						for(int i=0; i<items.length(); i++) {
-							skusAProductNo.put(items.getJSONObject(i).getString("article_sku"), items.getJSONObject(i).getString("product"));
-							productNos.add(items.getJSONObject(i).getString("product"));
-						}
-						logMe("." + pieces.length + "." + items.length() + "." + productNos.size());
-						org.json.JSONArray productArray = new org.json.JSONArray();
-						productNos.forEach(productArray::put);
-						resp = dr.getProductData(productArray);
-						jsonResponse = new org.json.JSONObject(resp);
-						items = jsonResponse.getJSONArray("items");
-						for(int i=0; i<items.length(); i++) {
-							logMe( productArray.getString(i) + " - " + items.getJSONObject(i));
-							productNoASupplierID.put(productArray.getString(i), items.getJSONObject(i).getString("SupplierID"));
-							map.put(productArray.getString(i), items.getJSONObject(i).getString("CurrentStatus"));
-						}
-						logMe("." + pieces.length + "." + items.length());
-						for(int i=0; i<pieces.length; i++) {
-//							objects.put(new org.json.JSONObject().put("sku", pieces[i]).put("owner", proveedoresMigrados.contains( productNoASupplierID.get( skusAProductNo.get( pieces[i] ) )  ) || skusAProductNo.get(pieces[i]).length() >= 15 ? "P360" : "STEP" ));
-							pn = skusAProductNo.get(pieces[i]);
-							if(pn != null) {
-								if(pn.length() >= 15) {
-									objects.put(new org.json.JSONObject().put("sku", pieces[i]).put("owner", "P360" ).put("status", nvl(statusMap.get( map.get(pn) ))));
-								}else {
-									supplierID = productNoASupplierID.get(pn);
-									if(supplierID != null) {
-										objects.put(new org.json.JSONObject().put("sku", pieces[i]).put("owner", proveedoresMigrados.contains( supplierID  ) ? "P360" : "STEP" ).put("status", nvl( statusMap.get( map.get(pn) ))));
-									}else {
-										objects.put(new org.json.JSONObject().put("sku", pieces[i]).put("owner", "STEP" ).put("status", nvl( statusMap.get(map.get(pn)))));
-									}
-								}
-							}else {
-								objects.put(new org.json.JSONObject().put("sku", pieces[i]).put("owner", "STEP" ).put("status", ""));
-							}
-						}
-					}catch(org.json.JSONException e) {
-						e.printStackTrace();
+		try(DBAccessDataStub dastub = new DBAccessDataStub( new ELog() {
+			
+			@Override
+			public void logE(Exception e) {
+			}
+			
+			@Override
+			public void log(String message) {
+				logMe(message);
+			}
+		} )){
+			DataRequestor dr = new DataRequestor(dastub);
+			String pn = null;
+			String supplierID = null;
+			java.util.Set<String> proveedoresMigrados = cargaProveedoresMigrados();
+			java.util.Map<String, String> map = new java.util.HashMap<>();
+			java.util.Map<String, String> statusMap = getStatusMap();
+			if(skus != null) {
+				String[] pieces = skus.split(",");
+				java.util.Map<String, String> skusAProductNo = new java.util.TreeMap<>();
+				java.util.Set<String> productNos = new java.util.TreeSet<>();
+				java.util.Map<String, String> productNoASupplierID = new java.util.TreeMap<>();
+				if(pieces != null) {
+					org.json.JSONArray skusArray = new org.json.JSONArray();
+					for(int i=0; i<pieces.length; i++) {
+						skusArray.put(pieces[i]);
 					}
-				}else {
-					logMe("Error.");
+					String resp = dr.articleBySKU(skusArray);
+					if(resp != null) {
+						logMe("Resp is: " + resp);
+						try{
+							org.json.JSONObject jsonResponse = new org.json.JSONObject(resp);
+							org.json.JSONArray items = jsonResponse.getJSONArray("items");
+							for(int i=0; i<items.length(); i++) {
+								skusAProductNo.put(items.getJSONObject(i).getString("article_sku"), items.getJSONObject(i).getString("product"));
+								productNos.add(items.getJSONObject(i).getString("product"));
+							}
+							logMe("." + pieces.length + "." + items.length() + "." + productNos.size());
+							org.json.JSONArray productArray = new org.json.JSONArray();
+							productNos.forEach(productArray::put);
+							resp = dr.getProductData(productArray);
+							jsonResponse = new org.json.JSONObject(resp);
+							items = jsonResponse.getJSONArray("items");
+							for(int i=0; i<items.length(); i++) {
+								logMe( productArray.getString(i) + " - " + items.getJSONObject(i));
+								productNoASupplierID.put(productArray.getString(i), items.getJSONObject(i).getString("SupplierID"));
+								map.put(productArray.getString(i), items.getJSONObject(i).getString("CurrentStatus"));
+							}
+							logMe("." + pieces.length + "." + items.length());
+							for(int i=0; i<pieces.length; i++) {
+	//							objects.put(new org.json.JSONObject().put("sku", pieces[i]).put("owner", proveedoresMigrados.contains( productNoASupplierID.get( skusAProductNo.get( pieces[i] ) )  ) || skusAProductNo.get(pieces[i]).length() >= 15 ? "P360" : "STEP" ));
+								pn = skusAProductNo.get(pieces[i]);
+								if(pn != null) {
+									if(pn.length() >= 15) {
+										objects.put(new org.json.JSONObject().put("sku", pieces[i]).put("owner", "P360" ).put("status", nvl(statusMap.get( map.get(pn) ))));
+									}else {
+										supplierID = productNoASupplierID.get(pn);
+										if(supplierID != null) {
+											objects.put(new org.json.JSONObject().put("sku", pieces[i]).put("owner", proveedoresMigrados.contains( supplierID  ) ? "P360" : "STEP" ).put("status", nvl( statusMap.get( map.get(pn) ))));
+										}else {
+											objects.put(new org.json.JSONObject().put("sku", pieces[i]).put("owner", "STEP" ).put("status", nvl( statusMap.get(map.get(pn)))));
+										}
+									}
+								}else {
+									objects.put(new org.json.JSONObject().put("sku", pieces[i]).put("owner", "STEP" ).put("status", ""));
+								}
+							}
+						}catch(org.json.JSONException e) {
+							e.printStackTrace();
+						}
+					}else {
+						logMe("Error.");
+					}
 				}
 			}
-		}
-		if(skusGeneric != null) {
-			String[] pieces = skusGeneric.split(",");
-			java.util.Map<String, String> skusAProductNo = new java.util.TreeMap<>();
-			java.util.Map<String, String> productNoASupplierID = new java.util.TreeMap<>();
-			if(pieces != null) {
-				org.json.JSONArray skusArray = new org.json.JSONArray();
-				for(int i=0; i<pieces.length; i++) {
-					skusArray.put(pieces[i]);
-				}
-//				System.out.println("Requesting: " + skusArray);
-				String resp = dr.productBySKU(skusArray);
-//				System.out.println("Got: " + resp);
-				if(resp != null) {
-					try{
-						org.json.JSONObject jsonResponse = new org.json.JSONObject(resp);
-						org.json.JSONArray items = jsonResponse.getJSONArray("items");
-						org.json.JSONArray productArray = new org.json.JSONArray();
-						for(int i=0; i<items.length(); i++) {
-							if(!"".equals(items.getString(i))) {
-								productArray.put(items.getString(i));
-								skusAProductNo.put(pieces[i], items.getString(i));
-							}
-						}
-//						System.out.println("Sending now: " + productArray);
-						resp = dr.getProductData(productArray);
-//						System.out.println("Got now: " + resp);
-						jsonResponse = new org.json.JSONObject(resp);
-						items = jsonResponse.getJSONArray("items");
-						for(int i=0; i<items.length(); i++) {
-//							System.out.println( productArray.getString(i) + " - " + items.getJSONObject(i));
-							productNoASupplierID.put(productArray.getString(i), items.getJSONObject(i).getString("SupplierID"));
-							map.put(productArray.getString(i), items.getJSONObject(i).getString("CurrentStatus"));
-						}
-						logMe(".-. lst .-.");
-						for(int i=0; i<pieces.length; i++) {
-							pn = skusAProductNo.get(pieces[i]);
-							if(pn != null) {
-								if(pn.length() >= 15) {
-									objectsGeneric.put(new org.json.JSONObject().put("sku", pieces[i]).put("owner", "P360" ).put("status", nvl( statusMap.get( map.get(pn) ))));
-								}else {
-									supplierID = productNoASupplierID.get(pn);
-									if(supplierID != null) {
-										objectsGeneric.put(new org.json.JSONObject().put("sku", pieces[i]).put("owner", proveedoresMigrados.contains( supplierID  ) ? "P360" : "STEP" ).put("status", nvl( statusMap.get( map.get(pn) ))));
-									}else {
-										objectsGeneric.put(new org.json.JSONObject().put("sku", pieces[i]).put("owner", "STEP" ).put("status", nvl( statusMap.get( map.get(pn) ))));
-									}
+			if(skusGeneric != null) {
+				String[] pieces = skusGeneric.split(",");
+				java.util.Map<String, String> skusAProductNo = new java.util.TreeMap<>();
+				java.util.Map<String, String> productNoASupplierID = new java.util.TreeMap<>();
+				if(pieces != null) {
+					org.json.JSONArray skusArray = new org.json.JSONArray();
+					for(int i=0; i<pieces.length; i++) {
+						skusArray.put(pieces[i]);
+					}
+	//				System.out.println("Requesting: " + skusArray);
+					String resp = dr.productBySKU(skusArray);
+	//				System.out.println("Got: " + resp);
+					if(resp != null) {
+						try{
+							org.json.JSONObject jsonResponse = new org.json.JSONObject(resp);
+							org.json.JSONArray items = jsonResponse.getJSONArray("items");
+							org.json.JSONArray productArray = new org.json.JSONArray();
+							for(int i=0; i<items.length(); i++) {
+								if(!"".equals(items.getString(i))) {
+									productArray.put(items.getString(i));
+									skusAProductNo.put(pieces[i], items.getString(i));
 								}
-							}else {
-//								System.out.println("No lo tuve: " + pieces[i]);
-								objectsGeneric.put(new org.json.JSONObject().put("sku", pieces[i]).put("owner", "STEP" ).put("status", ""));
 							}
+	//						System.out.println("Sending now: " + productArray);
+							resp = dr.getProductData(productArray);
+	//						System.out.println("Got now: " + resp);
+							jsonResponse = new org.json.JSONObject(resp);
+							items = jsonResponse.getJSONArray("items");
+							for(int i=0; i<items.length(); i++) {
+	//							System.out.println( productArray.getString(i) + " - " + items.getJSONObject(i));
+								productNoASupplierID.put(productArray.getString(i), items.getJSONObject(i).getString("SupplierID"));
+								map.put(productArray.getString(i), items.getJSONObject(i).getString("CurrentStatus"));
+							}
+							logMe(".-. lst .-.");
+							for(int i=0; i<pieces.length; i++) {
+								pn = skusAProductNo.get(pieces[i]);
+								if(pn != null) {
+									if(pn.length() >= 15) {
+										objectsGeneric.put(new org.json.JSONObject().put("sku", pieces[i]).put("owner", "P360" ).put("status", nvl( statusMap.get( map.get(pn) ))));
+									}else {
+										supplierID = productNoASupplierID.get(pn);
+										if(supplierID != null) {
+											objectsGeneric.put(new org.json.JSONObject().put("sku", pieces[i]).put("owner", proveedoresMigrados.contains( supplierID  ) ? "P360" : "STEP" ).put("status", nvl( statusMap.get( map.get(pn) ))));
+										}else {
+											objectsGeneric.put(new org.json.JSONObject().put("sku", pieces[i]).put("owner", "STEP" ).put("status", nvl( statusMap.get( map.get(pn) ))));
+										}
+									}
+								}else {
+	//								System.out.println("No lo tuve: " + pieces[i]);
+									objectsGeneric.put(new org.json.JSONObject().put("sku", pieces[i]).put("owner", "STEP" ).put("status", ""));
+								}
+							}
+						}catch(org.json.JSONException e) {
+							e.printStackTrace();
 						}
-					}catch(org.json.JSONException e) {
-						e.printStackTrace();
 					}
 				}
 			}
@@ -178,12 +193,12 @@ public class GetProductSystemOwner extends HttpServlet {
 		return null;
 	}
 	private void logMe(String message) {
-        try (java.io.PrintWriter pw = new java.io.PrintWriter(new java.io.OutputStreamWriter(
-                new java.io.FileOutputStream("../logs/getOwner.log", true)))) {
-            pw.println("[" + (new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new java.util.Date()))
-                    + "]  " + message);
-        } catch (java.io.IOException e) {
-        }
+//        try (java.io.PrintWriter pw = new java.io.PrintWriter(new java.io.OutputStreamWriter(
+//                new java.io.FileOutputStream("../logs/getOwner.log", true)))) {
+//            pw.println("[" + (new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new java.util.Date()))
+//                    + "]  " + message);
+//        } catch (java.io.IOException e) {
+//        }
     }
 
 	private final java.util.Map<String, String> getStatusMap() {

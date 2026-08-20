@@ -9,6 +9,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import mx.com.liverpool.p360.services.core.AgarraloONo;
+import mx.com.liverpool.p360.services.core.DBAccessDataStub;
+import mx.com.liverpool.p360.services.core.ELog;
 import mx.com.liverpool.p360.services.core.PropertiesManager;
 import mx.com.liverpool.p360.services.core.RESTWorkshop;
 
@@ -37,8 +39,24 @@ public class CalculaTomarNoTomar extends HttpServlet {
 			RESTWorkshop rw = new RESTWorkshop();
 			rw.setBaseUrl( PropertiesManager.get("p360.contingency.base_url") );
 			rw.getRc().getHeader().put("Authorization", "Basic: " + PropertiesManager.get("p360.contingency.basic_token_auth"));
-			AgarraloONo a = new AgarraloONo();
-			a.checale(externalId, rw.getBaseUrl());
+			try(DBAccessDataStub dastub = new DBAccessDataStub( new ELog() {
+				
+				@Override
+				public void logE(Exception e) {
+					// TODO Auto-generated method stub
+					
+				}
+				
+				@Override
+				public void log(String message) {
+					// TODO Auto-generated method stub
+					
+				}
+			}
+			)){
+				AgarraloONo a = new AgarraloONo(dastub);
+				a.checale(externalId, rw.getBaseUrl());
+			}
 		}
 	}
 

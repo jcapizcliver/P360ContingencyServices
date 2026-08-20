@@ -47,16 +47,13 @@ public class AutForoWrite extends HttpServlet {
 		while((line = br.readLine()) != null) {
 			sb.append(line);
 		}
-		try{
-			
+		try(WriteAttributesForo waf = new WriteAttributesForo()){
 			org.json.JSONObject rootRequest = new org.json.JSONObject(sb.toString());
-
 			try(java.io.PrintWriter pw = new java.io.PrintWriter(new java.io.OutputStreamWriter(new java.io.FileOutputStream(baseDirectory + randomFileName), java.nio.charset.Charset.forName("UTF-8")))){
 					pw.println(rootRequest);
 			}catch(java.io.IOException e) {
 				e.printStackTrace();
 			}
-			WriteAttributesForo waf = new WriteAttributesForo();
 			rawResponse = waf.processRequest(new String[] { baseDirectory + randomFileName, lkpCharsFile, baseUrl, authorization /* "cmVzdDpoZWlsZXI=" */ });
 			java.nio.file.Files.delete(java.nio.file.Paths.get( baseDirectory + randomFileName));
 			if(rawResponse instanceof org.json.JSONObject) {

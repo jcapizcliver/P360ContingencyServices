@@ -41,21 +41,18 @@ public class Reportes extends HttpServlet {
 		request.setCharacterEncoding("UTF-8");
 		java.io.BufferedReader br = request.getReader();
 		String line = null;
-//		String randomFileName = "BeibiGRFV_" + System.currentTimeMillis() + ".json";
 		StringBuilder sb = new StringBuilder();
 		org.json.JSONObject rawResponse = null;
 		while((line = br.readLine()) != null) {
 			sb.append(line);
 		}
-		try{
+		try(EchamelosCompa ec = new EchamelosCompa(baseUrl, encoded)){
 			org.json.JSONObject rootRequest = new org.json.JSONObject(sb.toString());
-			EchamelosCompa ec = new EchamelosCompa(baseUrl, encoded);
 			rawResponse = ec.processRequest(new String[] { rootRequest.getString("input") });
 		}catch(org.json.JSONException e) {
 			rawResponse = new org.json.JSONObject().put("Error", "Input was not a json object.");
 			response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
 		}
-//		response.setStatus(HttpServletResponse.SC_MOVED_TEMPORARILY);
 		response.setHeader("Content-Type", "application/json");
 		response.setHeader("Accept", "application/json");
 		response.setCharacterEncoding("UTF-8");

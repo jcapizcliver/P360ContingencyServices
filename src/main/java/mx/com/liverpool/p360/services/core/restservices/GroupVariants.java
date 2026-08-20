@@ -48,8 +48,9 @@ public class GroupVariants extends HttpServlet {
 		}
 		try{
 			
-			GetAttributeValuesForo ga = new GetAttributeValuesForo();
-			rawResponse = ga.agrupamelos(sb.toString(), baseUrl, encoded);
+			try(GetAttributeValuesForo ga = new GetAttributeValuesForo()){
+				rawResponse = ga.agrupamelos(sb.toString(), baseUrl, encoded);
+			}
 			
 		}catch(org.json.JSONException e) {
 			rawResponse = new org.json.JSONObject().put("Error", "Input was not a json object.");

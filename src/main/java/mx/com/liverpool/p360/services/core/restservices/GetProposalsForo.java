@@ -46,11 +46,8 @@ public class GetProposalsForo extends HttpServlet {
 		while((line = br.readLine()) != null) {
 			sb.append(line);
 		}
-		try{
-			
-			GetAttributeValuesForo ga = new GetAttributeValuesForo();
+		try(GetAttributeValuesForo ga = new GetAttributeValuesForo()){
 			rawResponse = ga.procesamelo(sb.toString(), baseUrl, encoded);
-			
 		}catch(org.json.JSONException e) {
 			rawResponse = new org.json.JSONObject().put("Error", "Input was not a json object.");
 			response.setStatus(HttpServletResponse.SC_BAD_REQUEST);

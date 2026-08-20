@@ -55,8 +55,9 @@ public class CreateProposal extends HttpServlet {
 //			rawResponse = new org.json.JSONObject().put("Error", "Input was not a json object.").toString();
 //			response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
 //		}
-		mx.com.liverpool.p360.services.core.CreateProposal cp = new mx.com.liverpool.p360.services.core.CreateProposal(baseUrl, encoded, SEQ.incrementAndGet());
-		rawResponse = cp.doIt(new String[] {rootRequest.getString("input"), templatesCacheDirectory, doDeleteInputFile}, x);
+		try(mx.com.liverpool.p360.services.core.CreateProposal cp = new mx.com.liverpool.p360.services.core.CreateProposal(baseUrl, encoded, SEQ.incrementAndGet())){
+			rawResponse = cp.doIt(new String[] {rootRequest.getString("input"), templatesCacheDirectory, doDeleteInputFile}, x);
+		}
 //		try {
 //			org.json.JSONObject resp = new org.json.JSONObject(rawResponse);
 //			if(resp.has("Error")) {

@@ -36,14 +36,15 @@ public class GetTemplateForo extends HttpServlet {
 		String externalInformation = request.getParameter("externalInformation");
 		String template = request.getParameter("template");
 		
-		TemplateAttributesForo ga = new TemplateAttributesForo();
-		Object rawResponse =  ga.processRequest(new String[] {template, baseUrl
-				/* "https://webctep360dev.liverpool.com.mx/rest/V2.0" */
-				, encoded, externalInformation});
-		response.setHeader("Content-Type", "application/json");
-		response.setHeader("Accept", "application/json");
-		response.setCharacterEncoding("UTF-8");
-		response.getWriter().println(rawResponse);
+		try(TemplateAttributesForo ga = new TemplateAttributesForo()){
+			Object rawResponse =  ga.processRequest(new String[] {template, baseUrl
+					, encoded, externalInformation});
+			response.setHeader("Content-Type", "application/json");
+			response.setHeader("Accept", "application/json");
+			response.setCharacterEncoding("UTF-8");
+			response.getWriter().println(rawResponse);
+		}
+		
 		
 	}
 
