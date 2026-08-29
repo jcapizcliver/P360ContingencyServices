@@ -12,14 +12,14 @@ import mx.com.liverpool.p360.services.core.QuickJdbcConnectionManager;
 /**
  * Servlet implementation class SurtidoYXDFastDataAccess
  */
-@WebServlet("/public/rt/SurtidoYXDFastDataAccess")
-public class SurtidoYXDFastDataAccess extends HttpServlet {
+@WebServlet("/public/rt/SurtidoYXDFastDataAccess2")
+public class SurtidoYXDFastDataAccess2 extends HttpServlet {
 	private static final long serialVersionUID = 1L;
        
     /**
      * @see HttpServlet#HttpServlet()
      */
-    public SurtidoYXDFastDataAccess() {
+    public SurtidoYXDFastDataAccess2() {
         super();
         // TODO Auto-generated constructor stub
     }
@@ -42,28 +42,22 @@ public class SurtidoYXDFastDataAccess extends HttpServlet {
 				if(currentSKUs.contains(sku))
 					continue;
 				try(java.sql.PreparedStatement pstmnt = con.prepareStatement(
-					  "select /*+ leading(aa bb acv) use_nl(bb acv) */"
+					  "select /*+ leading(aa bb) use_nl(bb) */"
 					+ "   bb.ID"
 					+ " , bb.\"EntityID\""
 					+ " , aa.\"EAN\""
 					+ " , aa.\"Res_Text250_02\""
 					+ " , bb.\"Identifier\""
 					+ " , bb.\"ArticleID\""
-					+ " , min(case when acv.\"CharacteristicID\" = 67027 and length(trim(acv.\"Value\")) > 0 then acv.\"Value\" end) \"ProductImage_URL2\""
-					+ " , min(case when acv.\"CharacteristicID\" = 27001 and length(trim(acv.\"Value\")) > 0 then acv.\"Value\" end) \"ProductImage_URL\""
 					+ " from \"ArticleDetail\" aa"
-					+ " inner join \"ArticleRevision\" bb"
-					+ " on aa.\"ArticleRevisionID\" = bb.ID"
+					+ " inner join"
+					+ " \"ArticleRevision\" bb"
+					+ " on"
+					+ "     aa.\"ArticleRevisionID\" = bb.ID"
 					+ " and aa.\"DeletionTimestamp\" = timestamp '9999-12-31 00:00:00.0'"
 					+ " and bb.\"DeletionTimestamp\" = timestamp '9999-12-31 00:00:00.0'"
-					+ " and bb.\"RevisionID\" = 1"
-					+ " left outer join \"ArticleCharactValue\" acv"
-					+ " on acv.\"ArticleRevisionID\" = bb.ID"
-					+ " and bb.\"EntityID\" = 1000"
-					+ " and acv.\"DeletionTimestamp\" = timestamp '9999-12-31 00:00:00.0'"
-					+ " and acv.\"CharacteristicID\" in (67027, 27001)"
+					+ " and bb.\"RevisionID\" = 1 "
 					+ " where aa.\"Res_Int_02\" = ?"
-					+ " group by bb.ID, bb.\"EntityID\", aa.\"EAN\", aa.\"Res_Text250_02\", bb.\"Identifier\", bb.\"ArticleID\""
 					+ " order by bb.\"EntityID\" asc"
 				)){
 					pstmnt.setInt(1, Integer.parseInt(sku));
@@ -74,7 +68,6 @@ public class SurtidoYXDFastDataAccess extends HttpServlet {
 					Integer productInternalId = null;
 					String ean = null;
 					Integer parentSKU = null;
-					String legacyImageURL = null;
 					String imageURL = null;
 					String productName = null;
 					String textoAdicional = null;
@@ -88,10 +81,9 @@ public class SurtidoYXDFastDataAccess extends HttpServlet {
 							id = rs.getInt(1);
 							entityID = rs.getInt(2);
 							ean = rs.getString(3);
-							legacyImageURL = rs.getString(4);
+							imageURL = rs.getString(4);
 							identifier = rs.getString(5);
 							artID = rs.getInt(6);
-							imageURL = entityID == 1000 ? firstNonBlank(rs.getString(7), rs.getString(8), legacyImageURL) : legacyImageURL;
 						}
 					}
 					if(id != null) {
@@ -246,60 +238,57 @@ public class SurtidoYXDFastDataAccess extends HttpServlet {
 							}
 							
 							try(java.sql.PreparedStatement pstmnt2 = con.prepareStatement(
-									  "select /*+ leading(ref ad dom acv) use_nl(ad dom acv) */"
-									+ "   ref.\"ArticleRevisionID\""
-									+ " , ad.\"Res_Int_02\""
-									+ " , ad.\"EAN\""
-									+ " , tallaLang.\"Name\" \"Talla\""
-									+ " , colorLang.\"Name\" \"Color\""
-									+ " , min(case when acv.\"CharacteristicID\" = 67027 and length(trim(acv.\"Value\")) > 0 then acv.\"Value\" end) \"ProductImage_URL2\""
-									+ " , min(case when acv.\"CharacteristicID\" = 27001 and length(trim(acv.\"Value\")) > 0 then acv.\"Value\" end) \"ProductImage_URL\""
-									+ " from \"ArticleReference\" ref"
-									+ " inner join \"ArticleDetail\" ad"
-									+ " on ad.\"ArticleRevisionID\" = ref.\"ArticleRevisionID\""
-									+ " and ad.\"DeletionTimestamp\" = timestamp '9999-12-31 00:00:00.0'"
-									+ " left outer join \"ArticleDomain\" dom"
-									+ " on dom.\"ArticleRevisionID\" = ref.\"ArticleRevisionID\""
-									+ " and dom.\"DeletionTimestamp\" = timestamp '9999-12-31 00:00:00.0'"
-									+ " left outer join PIM_MAIN.\"LookupValueRevision\" tallaRev"
-									+ " on tallaRev.\"LookupValueID\" = dom.\"Res_Int_01\""
-									+ " and tallaRev.\"DeletionTimestamp\" = timestamp '9999-12-31 00:00:00.0'"
-									+ " and tallaRev.\"RevisionID\" = 1"
-									+ " left outer join PIM_MAIN.\"LookupValueLang\" tallaLang"
-									+ " on tallaLang.\"LookupValueRevisionID\" = tallaRev.ID"
-									+ " and tallaLang.\"DeletionTimestamp\" = timestamp '9999-12-31 00:00:00.0'"
-									+ " and tallaLang.\"LanguageID\" = 10"
-									+ " left outer join PIM_MAIN.\"LookupValueRevision\" colorRev"
-									+ " on colorRev.\"LookupValueID\" = dom.\"Res_Int_02\""
-									+ " and colorRev.\"DeletionTimestamp\" = timestamp '9999-12-31 00:00:00.0'"
-									+ " and colorRev.\"RevisionID\" = 1"
-									+ " left outer join PIM_MAIN.\"LookupValueLang\" colorLang"
-									+ " on colorLang.\"LookupValueRevisionID\" = colorRev.ID"
-									+ " and colorLang.\"DeletionTimestamp\" = timestamp '9999-12-31 00:00:00.0'"
-									+ " and colorLang.\"LanguageID\" = 10"
-									+ " left outer join \"ArticleCharactValue\" acv"
-									+ " on acv.\"ArticleRevisionID\" = ref.\"ArticleRevisionID\""
-									+ " and acv.\"DeletionTimestamp\" = timestamp '9999-12-31 00:00:00.0'"
-									+ " and acv.\"CharacteristicID\" in (67027, 27001)"
-									+ " where ref.\"RefExtArtIdentifier\" = ?"
-									+ " and ref.\"RefIntArtID\" = ?"
-									+ " and ref.\"DeletionTimestamp\" = timestamp '9999-12-31 00:00:00.0'"
-									+ " group by ref.\"ArticleRevisionID\", ad.\"Res_Int_02\", ad.\"EAN\", tallaLang.\"Name\", colorLang.\"Name\""
+									   "select "
+									+ "   bb.\"ArticleRevisionID\""
+									+ " from"
+									+ " \"ArticleReference\" bb"
+									+ " where"
+									+ " bb.\"RefExtArtIdentifier\" = ? and bb.\"RefIntArtID\" = ? and bb.\"DeletionTimestamp\" = timestamp '9999-12-31 00:00:00.0'"
 							)){
 								pstmnt2.setString(1, identifier);
 								pstmnt2.setInt(2, artID);
 								try(java.sql.ResultSet rs = pstmnt2.executeQuery()){
 									while(rs.next()) {
 										id = rs.getInt(1);
-										sku = String.valueOf(rs.getInt(2));
-										ean = rs.getString(3);
-										talla = rs.getString(4);
-										color = rs.getString(5);
-										imageURL = firstNonBlank(rs.getString(6), rs.getString(7), legacyImageURL);
-
+										
+										try(java.sql.PreparedStatement pstmnt3 = con.prepareStatement(
+												"select "
+														+ "   aa.\"Res_Int_02\""
+														+ "  ,aa.EAN"
+														+ " from"
+														+ " \"ArticleDetail\" aa"
+														+ " where"
+														+ " aa.\"ArticleRevisionID\" = ? and aa.\"DeletionTimestamp\" = timestamp '9999-12-31 00:00:00.0'"
+												)){
+											pstmnt3.setInt(1, id);
+											try(java.sql.ResultSet rs2 = pstmnt3.executeQuery()){
+												if(rs2.next()) {
+													sku = String.valueOf( rs2.getInt(1) );
+												}
+											}
+										}
+										
 										if(currentSKUs.contains(sku))
 											continue;
-
+										
+										try(java.sql.PreparedStatement pstmnt3 = con.prepareStatement(
+												   "select "
+												+ "   (select (select \"Name\" from PIM_MAIN.\"LookupValueLang\" cc where cc.\"DeletionTimestamp\" = timestamp '9999-12-31 00:00:00.0' and cc.\"LanguageID\" = 10 and cc.\"LookupValueRevisionID\" = aa.ID ) from PIM_MAIN.\"LookupValueRevision\" aa where aa.\"DeletionTimestamp\" = timestamp '9999-12-31 00:00:00.0' and aa.\"RevisionID\" = 1 and aa.\"LookupValueID\" = ad.\"Res_Int_01\") \"Talla\""
+												+ " , (select (select \"Name\" from PIM_MAIN.\"LookupValueLang\" cc where cc.\"DeletionTimestamp\" = timestamp '9999-12-31 00:00:00.0' and cc.\"LanguageID\" = 10 and cc.\"LookupValueRevisionID\" = aa.ID ) from PIM_MAIN.\"LookupValueRevision\" aa where aa.\"DeletionTimestamp\" = timestamp '9999-12-31 00:00:00.0' and aa.\"RevisionID\" = 1 and aa.\"LookupValueID\" = ad.\"Res_Int_02\") \"Color\""
+												+ " from"
+												+ " \"ArticleDomain\" ad"
+												+ " where"
+												+ " ad.\"ArticleRevisionID\" = ? and ad.\"DeletionTimestamp\" = timestamp '9999-12-31 00:00:00.0'"
+										)){
+											pstmnt3.setInt(1, id);
+											try(java.sql.ResultSet rs2 = pstmnt3.executeQuery()){
+												if(rs2.next()) {
+													talla = rs2.getString(1);
+													color = rs2.getString(2);
+												}
+											}
+										}
+										
 										org.json.JSONObject jr = new org.json.JSONObject();
 										jr
 											.put("sku", sku == null ? "" : sku)
@@ -344,17 +333,6 @@ public class SurtidoYXDFastDataAccess extends HttpServlet {
 		response.setHeader("Accept", "application/json");
 		response.setCharacterEncoding("UTF-8");
 		response.getWriter().println(responses.toString());
-	}
-
-
-	private String firstNonBlank(String... values) {
-		if(values == null)
-			return null;
-		for(String value : values) {
-			if(value != null && !value.trim().isEmpty())
-				return value;
-		}
-		return null;
 	}
 
 

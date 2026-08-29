@@ -38,12 +38,10 @@ public class KeepFinalMediaAssetURLs2 extends HttpServlet {
             String doDeleteInputFile = PropertiesManager.get("p360.contingency.do_delete_input_file");
             boolean x = Boolean.parseBoolean(request.getParameter("x"));
 
-            mx.com.liverpool.p360.services.core.CreateProposalFrozenMediaURLs cp =
-                    new mx.com.liverpool.p360.services.core.CreateProposalFrozenMediaURLs(baseUrl, encoded, SEQ.incrementAndGet());
+            mx.com.liverpool.p360.services.core.CreateProposalFrozenMediaURLs cp = new mx.com.liverpool.p360.services.core.CreateProposalFrozenMediaURLs(baseUrl, encoded, SEQ.incrementAndGet());
             String rawResponse = cp.doIt(new String[] {
                     rootRequest.getString("input"), templatesCacheDirectory, doDeleteInputFile
             }, x);
-
             if (ImageTrafficLimiter.isBusyResponse(rawResponse)) {
                 response.setStatus(429);
                 response.setHeader("Retry-After", "5");
